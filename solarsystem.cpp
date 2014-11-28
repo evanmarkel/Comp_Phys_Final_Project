@@ -1,4 +1,5 @@
 #include "solarsystem.h"
+#include <math.h>
 
 SolarSystem::SolarSystem()
 {
@@ -14,6 +15,7 @@ void SolarSystem::makeX(){
     forces.resize(3*this->numberOfBodies());
     k.resize(6*this->numberOfBodies());
     v.resize(6*this->numberOfBodies());
+    timestep.resize(this->numberOfBodies());
     for(int i = 0; i<this->numberOfBodies(); i++){
         this->X[6*i + 0] = this->bodies[i].position[0];
         this->X[6*i + 1] = this->bodies[i].position[1];
@@ -29,6 +31,7 @@ void SolarSystem::makeXV(){
     X.resize(3*this->numberOfBodies());
     A.resize(3*this->numberOfBodies());
     V.resize(3*this->numberOfBodies());
+    timestep.resize(this->numberOfBodies());
     forces.resize(3*this->numberOfBodies());
     for(int i = 0; i<this->numberOfBodies(); i++){
         this->X[3*i + 0] = this->bodies[i].position[0];
@@ -84,7 +87,7 @@ std::valarray<double> SolarSystem::calculateForcesAndEnergy(std::valarray<double
 
         //angular momentum L = r x v
         double dangularMomentum = body1.position.length() * body1.velocity.length();
-      //  std::cout << potentialEnergy << " and KE " << kineticEnergy << "and L" << dangularMomentum<< std::endl;
+        //  std::cout << potentialEnergy << " and KE " << kineticEnergy << "and L" << dangularMomentum<< std::endl;
     }
     //calculate Vx Vy Vz.assign to X. also assign forces.
     for (int i =0; i <numberOfBodies(); i++){
@@ -99,56 +102,68 @@ std::valarray<double> SolarSystem::calculateForcesAndEnergy(std::valarray<double
     return k;
 }
 
-std::valarray<double> SolarSystem::calculateVerlet(std::valarray<double> X)
+std::valarray<double> SolarSystem::calculateVerlet(std::valarray<double> X, std::valarray<double> A, int bin)
 {
     forces = 0;
     kineticEnergy = 0;
     potentialEnergy = 0;
     angularMomentum.setToZero();
+    array_time = 9e20;
     double G = 4*M_PI*M_PI;
 
     for(int i=0; i<numberOfBodies(); i++) {
-        CelestialBody &body1 = bodies[i];
-        for(int j=i+1; j<numberOfBodies(); j++) {
-            CelestialBody &body2 = bodies[j];
-            vec3 deltaRVector =  body1.position - body2.position;
-            double dr = deltaRVector.length();
-            double dx = X[3*i + 0] - X[3*j + 0];
-            double dy = X[3*i + 1] - X[3*j + 1];
-            double dz = X[3*i + 2] - X[3*j + 2];
+        if(bin>=bodies[i].dtbin){
+            CelestialBody &body1 = bodies[i];
+            for(int j=i+1; j<numberOfBodies(); j++) {
+                CelestialBody &body2 = bodies[j];
+                vec3 deltaRVector =  body1.position - body2.position;
+                double dr = deltaRVector.length();
+                double dx = X[3*i + 0] - X[3*j + 0];
+                double dy = X[3*i + 1] - X[3*j + 1];
+                double dz = X[3*i + 2] - X[3*j + 2];
 
-            //f is the force acting between body 1 and body 2
-            double f = -(G * body1.mass * body2.mass)/sqrt(dr*dr*dr);
+                //f is the force acting between body 1 and body 2
+                double f = -(G * body1.mass * body2.mass)/sqrt(dr*dr*dr);
 
-            //a is the force multiplied by the relative position of the two bodies. the movement is added to previous position
-            double axtemp = dx*(f);
-            double aytemp = dy*(f);
-            double aztemp = dz*(f);
+                //a is the force multiplied by the relative position of the two bodies.
+                //the movement is added to previous position
+                //dt_min=array_time;
+                //array_time=abs(dr)/abs(body1.velocity);
 
-            //forces vector values for body 1
-            forces[3*i + 0] += axtemp;
-            forces[3*i + 1] += aytemp;
-            forces[3*i + 2] += aztemp;
 
-            //forces vector values for body 2
-            forces[3*j + 0] -= axtemp;
-            forces[3*j + 1] -= aytemp;
-            forces[3*j + 2] -= aztemp;
+                double axtemp = dx*(f);
+                double aytemp = dy*(f);
+                double aztemp = dz*(f);
 
-            potentialEnergy -= (body1.mass*body2.mass)/dr;
+                //forces vector values for body 1
+                forces[3*i + 0] += axtemp;
+                forces[3*i + 1] += aytemp;
+                forces[3*i + 2] += aztemp;
+
+                //forces vector values for body 2
+                forces[3*j + 0] -= axtemp;
+                forces[3*j + 1] -= aytemp;
+                forces[3*j + 2] -= aztemp;
+
+                potentialEnergy -= (body1.mass*body2.mass)/dr;
+
+            }
+
+            kineticEnergy += 0.5*body1.mass*body1.velocity.lengthSquared();
+
+            //angular momentum L = r x v
+            //double dangularMomentum = body1.position.length() * body1.velocity.length();
+            //std::cout << potentialEnergy << " and KE " << kineticEnergy << "and L" << dangularMomentum<< std::endl;
         }
-
-        kineticEnergy += 0.5*body1.mass*body1.velocity.lengthSquared();
-
-        //angular momentum L = r x v
-        //double dangularMomentum = body1.position.length() * body1.velocity.length();
-        //std::cout << potentialEnergy << " and KE " << kineticEnergy << "and L" << dangularMomentum<< std::endl;
     }
+
     for (int i =0; i <numberOfBodies(); i++){
-        double m = bodies[i].mass;
-        A[3*i + 0] = forces[3*i + 0] / m; //vx(t+dt/2)=vx(t)+.5ax(t)dt
-        A[3*i + 1] = forces[3*i + 1] / m; //vy(t+dt/2)=vy(t)+.5ay(t)dt
-        A[3*i + 2] = forces[3*i + 2] / m; //vz(t+dt/2)=vz(t)+.5az(t)dt
+        if(bin>=bodies[i].dtbin){
+            double m = bodies[i].mass;
+            A[3*i + 0] = forces[3*i + 0] / m; //vx(t+dt/2)=vx(t)+.5ax(t)dt
+            A[3*i + 1] = forces[3*i + 1] / m; //vy(t+dt/2)=vy(t)+.5ay(t)dt
+            A[3*i + 2] = forces[3*i + 2] / m; //vz(t+dt/2)=vz(t)+.5az(t)dt
+        }
     }
     return A;
 }
@@ -162,3 +177,42 @@ double SolarSystem::totalEnergy()
 {
     return this->kineticEnergy + this->potentialEnergy;
 }
+
+double SolarSystem::min_time()
+{
+    std::valarray<double> timestep(3*numberOfBodies());
+    double acc_constant=1;  //bodies[i].V.length();
+    int bin;
+    for(int i =0; i<numberOfBodies();i++){
+        double Alength= sqrt(this->A[3*i+0]*this->A[3*i+0] + this->A[3*i+1]*this->A[3*i+1] + this->A[3*i+2]*this->A[3*i+2]);
+        double dtbin=acc_constant*(1/Alength);
+        if (dtbin>.1) bin=0;
+        else if (.05<dtbin<.1) bin=1;
+        else bin=2;
+        if(dtbin<dt_min){dt_min = dtbin;}
+        for(int j=0;j<3;j++){
+            bodies[i].dtbin = bin;
+        } return bin;
+    }
+}
+
+std::valarray<double> SolarSystem::bin_particles(int bin)
+{
+    stepvalues.resize(3*this->numberOfBodies());
+    for(int i=0;i<numberOfBodies(); i++){
+        if (bodies[i].dtbin = bin){
+            stepvalues[i + 0]=1;
+            stepvalues[i + 1]=1;
+            stepvalues[i + 2]=1;
+        }
+        else{
+            stepvalues[i + 0]=0;
+            stepvalues[i + 1]=0;
+            stepvalues[i + 2]=0;
+        }
+
+    } return stepvalues;
+}
+
+
+
