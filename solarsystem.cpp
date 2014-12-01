@@ -15,7 +15,7 @@ void SolarSystem::makeX(){
     forces.resize(3*this->numberOfBodies());
     k.resize(6*this->numberOfBodies());
     v.resize(6*this->numberOfBodies());
-    timestep.resize(this->numberOfBodies());
+    timestep.resize(3*this->numberOfBodies());
     for(int i = 0; i<this->numberOfBodies(); i++){
         this->X[6*i + 0] = this->bodies[i].position[0];
         this->X[6*i + 1] = this->bodies[i].position[1];
@@ -31,7 +31,7 @@ void SolarSystem::makeXV(){
     X.resize(3*this->numberOfBodies());
     A.resize(3*this->numberOfBodies());
     V.resize(3*this->numberOfBodies());
-    timestep.resize(this->numberOfBodies());
+    timestep.resize(3*this->numberOfBodies());
     forces.resize(3*this->numberOfBodies());
     for(int i = 0; i<this->numberOfBodies(); i++){
         this->X[3*i + 0] = this->bodies[i].position[0];
@@ -180,38 +180,44 @@ double SolarSystem::totalEnergy()
 
 double SolarSystem::min_time()
 {
-    std::valarray<double> timestep(3*numberOfBodies());
-    double acc_constant=1;  //bodies[i].V.length();
+    // std::valarray<double> timestep(3*numberOfBodies());
+    double acc_constant=600;  //bodies[i].V.length();
     int bin;
-    for(int i =0; i<numberOfBodies();i++){
+    for(int i =0; i < numberOfBodies();i++){
         double Alength= sqrt(this->A[3*i+0]*this->A[3*i+0] + this->A[3*i+1]*this->A[3*i+1] + this->A[3*i+2]*this->A[3*i+2]);
-        double dtbin=acc_constant*(1/Alength);
-        if (dtbin>.1) bin=0;
-        else if (.05<dtbin<.1) bin=1;
-        else bin=2;
-        if(dtbin<dt_min){dt_min = dtbin;}
-        for(int j=0;j<3;j++){
-            bodies[i].dtbin = bin;
-        } return bin;
+        double tstep_metric=acc_constant*(1/Alength);
+
+        if (tstep_metric < 1.0){ bin = 2;}
+        else if (tstep_metric <= 1.5){ bin = 1;}
+        else {bin = 0;}
+        if(tstep_metric < dt_min){dt_min = tstep_metric;}
+        std::cout << "tstep_metric for body i = " << i << " is " << tstep_metric << " bin = " << bin << std::endl;
+        bodies[i].dtbin = bin;
     }
+    for(int i = 0; i < numberOfBodies(); i++) {
+        CelestialBody &thisBody = bodies[i];
+    std::cout << "bodies.dtbin i= " << i <<  "is " << thisBody.dtbin << std::endl;
+    }
+    return dt_min;
 }
 
 std::valarray<double> SolarSystem::bin_particles(int bin)
 {
     stepvalues.resize(3*this->numberOfBodies());
-    for(int i=0;i<numberOfBodies(); i++){
-        if (bodies[i].dtbin = bin){
-            stepvalues[i + 0]=1;
-            stepvalues[i + 1]=1;
-            stepvalues[i + 2]=1;
+    for(int i=0;i < numberOfBodies(); i++){
+        if (bodies[i].dtbin == bin){
+            stepvalues[3*i + 0]=1;
+            stepvalues[3*i + 1]=1;
+            stepvalues[3*i + 2]=1;
         }
         else{
-            stepvalues[i + 0]=0;
-            stepvalues[i + 1]=0;
-            stepvalues[i + 2]=0;
+            stepvalues[3*i + 0]=0;
+            stepvalues[3*i + 1]=0;
+            stepvalues[3*i + 2]=0;
         }
-
-    } return stepvalues;
+//std::cout << stepvalues[3*i] << " " << stepvalues[3*i+1]<< std::endl;
+    }
+    return stepvalues;
 }
 
 
