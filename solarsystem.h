@@ -36,7 +36,7 @@ public:
     int numberOfBodies();
     double totalEnergy();
     double min_time();
-    std::valarray<double> bin_particles(int bin);
+    std::valarray<double> bin_particles(int boolean_bin);
 };
 
 #endif // SOLARSYSTEM_H
