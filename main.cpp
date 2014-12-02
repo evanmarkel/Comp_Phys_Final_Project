@@ -18,7 +18,7 @@ int main()
 {
 
     ofstream myfile;
-    myfile.open("es.txt");
+    myfile.open("esm4.txt");
     //define step variable h and run length. years are the units
     double h = .004; //step length
     double final_time = 400; //years
@@ -59,12 +59,12 @@ int main()
       //  mySolarSystem.addCelestialBody(CelestialBody(vec3(x,y,z), vec3(gaussian_deviate(&seed)/10,gaussian_deviate(&seed)/10,gaussian_deviate(&seed)/10), mass));
     }
     CelestialBody sun(vec3(0,0,0), vec3(0,0,0), 1.0);
-    //CelestialBody mercury(vec3(-.39,0,0), vec3(0,-1.67*earthvel,0), 1.65e-7);
-    //CelestialBody venus(vec3(0,.72,0), vec3(1.174*earthvel,0,0), 2.44e-6);
-    CelestialBody earth(vec3(0,1,0), vec3(earthvel,0, 0), 3e-6);
-    //CelestialBody earthmoon(vec3(1.00256956, 0, 0), vec3(0, .034352+earthvel, 0), 3.6e-8);
-    //CelestialBody mars(vec3(0,1.52,0), vec3(.802*earthvel,0, 0), 0.0000003209425513);
-    //CelestialBody jupiter(vec3(5.2, 0, 0), vec3(0, .434*earthvel, 0), 3e-3);  //Jupiter's orbital velocity is 43% of earth's 1/r^2. or 5.20/12year orbit.
+    CelestialBody mercury(vec3(-.39,0,0), vec3(0,-1.67*earthvel,0), 1.65e-7);
+    CelestialBody venus(vec3(0,.72,0), vec3(1.174*earthvel,0,0), 2.44e-6);
+    CelestialBody earth(vec3(1,0,0), vec3(0,earthvel, 0), 3e-6);
+    CelestialBody earthmoon(vec3(1.00256956, 0, 0), vec3(0, -.034352+earthvel, 0), 3.6e-8);
+    CelestialBody mars(vec3(0,1.52,0), vec3(.802*earthvel,0, 0), 0.0000003209425513);
+    CelestialBody jupiter(vec3(5.2, 0, 0), vec3(0, .434*earthvel, 0), 3e-3);  //Jupiter's orbital velocity is 43% of earth's 1/r^2. or 5.20/12year orbit.
     //CelestialBody saturn(vec3(0,-9.54,0), vec3(-.323*earthvel,0, 0), 2.85e-5);
     //CelestialBody uranus(vec3(19.19,0,0), vec3(0,.228*earthvel, 0), 4.3e-5);
     //CelestialBody neptune(vec3(30.06,0,0), vec3(0,.182*earthvel, 0), 5.516e-5);
@@ -72,12 +72,12 @@ int main()
 
 
     mySolarSystem.addCelestialBody(sun);
-    //mySolarSystem.addCelestialBody(mercury);
-    //mySolarSystem.addCelestialBody(venus);
+    mySolarSystem.addCelestialBody(mercury);
+    mySolarSystem.addCelestialBody(venus);
     mySolarSystem.addCelestialBody(earth);
-    //mySolarSystem.addCelestialBody(earthmoon);
-    //mySolarSystem.addCelestialBody(mars);
-    //mySolarSystem.addCelestialBody(jupiter);
+    mySolarSystem.addCelestialBody(earthmoon);
+    mySolarSystem.addCelestialBody(mars);
+    mySolarSystem.addCelestialBody(jupiter);
     //mySolarSystem.addCelestialBody(saturn);
     //mySolarSystem.addCelestialBody(uranus);
     //mySolarSystem.addCelestialBody(neptune);
@@ -104,6 +104,8 @@ int main()
         }
         myfile << endl;
 
+        cout << "Hello this is distance jaaaaa    " <<sqrt((mySolarSystem.X[3+0]-mySolarSystem.X[6+0])*(mySolarSystem.X[3+0]-mySolarSystem.X[6+0]) +
+                     (mySolarSystem.X[3+1]-mySolarSystem.X[6+1])*(mySolarSystem.X[3+1]-mySolarSystem.X[6+1])) << endl;
         //perform RK4 for the timescale of observation
         //change to verlet for verlet
         //RK4::integrate(mySolarSystem.X,h,mySolarSystem);

@@ -111,6 +111,7 @@ std::valarray<double> SolarSystem::calculateVerlet(std::valarray<double> X, std:
     double G = 4*M_PI*M_PI;
 
     for(int i=0; i<numberOfBodies(); i++) {
+//        std::cout << bodies[i].dtbin << "bin " << bin << std::endl;
         if(bin <= bodies[i].dtbin){
             CelestialBody &body1 = bodies[i];
             for(int j=i+1; j<numberOfBodies(); j++) {
@@ -190,9 +191,9 @@ double SolarSystem::min_time()
     }
     for(int i = 0; i < numberOfBodies(); i++) {
         CelestialBody &thisBody = bodies[i];
-    std::cout << "bodies.dtbin i= " << i <<  "is " << thisBody.dtbin << std::endl;
+    //std::cout << "bodies.dtbin i= " << i <<  "is " << thisBody.dtbin << std::endl;
     }
-    std::cout << "dt_min is " << dt_min << std::endl;
+   // std::cout << "dt_min is " << dt_min << std::endl;
     return dt_min;
 }
 
