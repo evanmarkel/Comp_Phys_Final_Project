@@ -175,15 +175,15 @@ double SolarSystem::totalEnergy()
 double SolarSystem::min_time()
 {
     // std::valarray<double> timestep(3*numberOfBodies());
-    dt_min = .004;
+    dt_min = .005;
     double acc_constant = 1;
     int bin;
     for(int i =0; i < numberOfBodies();i++){
         double Alength = sqrt(this->A[3*i+0]*this->A[3*i+0] + this->A[3*i+1]*this->A[3*i+1] + this->A[3*i+2]*this->A[3*i+2]);
         double tstep_metric = acc_constant*(1/Alength);
 
-        if (tstep_metric < .01){ bin = 2;}
-        else if (tstep_metric <= .5){ bin = 1;}
+        if (tstep_metric < .002){ bin = 2;}
+        else if (tstep_metric <= .003){ bin = 1;}
         else {bin = 0;}
         if(tstep_metric < dt_min && tstep_metric > 0){dt_min = tstep_metric;}
         std::cout << "tstep_metric for body i = " << i << " is " << tstep_metric << " bin = " << bin << std::endl;
@@ -193,7 +193,8 @@ double SolarSystem::min_time()
         CelestialBody &thisBody = bodies[i];
     //std::cout << "bodies.dtbin i= " << i <<  "is " << thisBody.dtbin << std::endl;
     }
-   // std::cout << "dt_min is " << dt_min << std::endl;
+    //std::cout << "dt_min is " << dt_min << std::endl;
+    dt_min = 0.005;
     return dt_min;
 }
 
@@ -211,7 +212,7 @@ std::valarray<double> SolarSystem::bin_particles(int boolean_bin)
             stepvalues[3*i + 1]=0;
             stepvalues[3*i + 2]=0;
         }
-std::cout << stepvalues[3*i] << " " << stepvalues[3*i+1]<< " " << bodies[i].dtbin <<std::endl;
+//std::cout << stepvalues[3*i] << " " << stepvalues[3*i+1]<< " " << bodies[i].dtbin <<std::endl;
     }
     return stepvalues;
 }
