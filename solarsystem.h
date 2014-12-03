@@ -12,6 +12,7 @@ class SolarSystem
 public:
     vector<CelestialBody> bodies;
     std::valarray<double> X;
+    std::valarray<double> E;
     std::valarray<double> A;
     std::valarray<double> V;
     std::valarray<double> k;
@@ -24,18 +25,22 @@ public:
     double timeclass;
     double dt_min;
     double array_time;
+    int isBound;
     vec3 angularMomentum;
     vec3 a;
 
     SolarSystem();
     void addCelestialBody(CelestialBody newBody);
-    std::valarray<double> calculateForcesAndEnergy(std::valarray<double> X, double G, double eps);
-    std::valarray<double> calculateVerlet(std::valarray<double> X,std::valarray<double> A, int bin, double G, double eps);
+    std::valarray<double> calculateForcesAndEnergy(std::valarray<double> X, std::valarray<double> V, double G, double eps);
+    std::valarray<double> calculateVerlet(std::valarray<double> X,std::valarray<double> A, std::valarray<double> V, int bin, double G, double eps);
+    std::valarray<double> calculateEnergy(std::valarray<double> X, std::valarray<double> V, double G);
     void makeX();
     void makeXV();
     int numberOfBodies();
-    double totalEnergy();
-    double min_time();
+    double CalculateKineticEnergy();
+    double CalculatePotentialEnergy();
+    double CalculateBoundPotentialEnergy();
+    double min_time(double global_min);
     std::valarray<double> bin_particles(int boolean_bin);
 };
 

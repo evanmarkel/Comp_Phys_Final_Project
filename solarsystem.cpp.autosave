@@ -175,7 +175,6 @@ std::cout << "pe " << potentialEnergy << " ke " << kineticEnergy << " isbound " 
 
 std::valarray<double> SolarSystem::calculateEnergy(std::valarray<double> X, std::valarray<double> V, double G)
 {
-
     isBound = 2;
     angularMomentum.setToZero();
 

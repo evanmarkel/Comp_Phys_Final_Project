@@ -16,9 +16,8 @@ using namespace std;
 
 int main()
 {
-
     ofstream myfile;
-    myfile.open("5N500.xyz");
+    myfile.open("5N500Energy.xyz");
 
     double G_solarsystem = 4*M_PI*M_PI; //value of Gravitational constant.
     double earthvel = 2*M_PI;
@@ -80,10 +79,13 @@ int main()
     //change makeX to makeXV for Verlet. makeX is for the original RK4 valarray with pos, vel combined.
     mySolarSystem.makeXV();
     double step = global_min;
-    for(int i = 0; i < final_time/global_min; i++){
 
-        verlet::INTEGRATE(mySolarSystem.X,mySolarSystem.V,mySolarSystem.A,step,mySolarSystem, G, eps);
-        step = mySolarSystem.min_time();
+    //timesteps are variable so the system runs a variable number of times, dependent on the steplength each iteration returned by 'step' below
+    // and will finish by the 'final_time'
+    for(double i = 0; i < final_time; i += step){
+
+        verlet::INTEGRATE(mySolarSystem.X,mySolarSystem.V,mySolarSystem.A,mySolarSystem.E,step*4,mySolarSystem, G, eps);
+        step = mySolarSystem.min_time(global_min);
 
         //write to file
         myfile << N << endl;
@@ -94,16 +96,12 @@ int main()
             //CHANGE X[6*i+0]RK4 to X[3*i+0]Verlet as necessary.
             // myfile << mySolarSystem.X[6*i+0] << " " << mySolarSystem.X[6*i+1] << " " << mySolarSystem.X[6*i+2] << " ";//RK4
             CelestialBody &thisBody = mySolarSystem.bodies[i];
-            myfile << thisBody.mass/70 << " " << mySolarSystem.X[3*i+0] << " " << mySolarSystem.X[3*i+1] << " " << mySolarSystem.X[3*i+2] << endl;
+            myfile << thisBody.mass/60 << " " << mySolarSystem.X[3*i+0] << " " << mySolarSystem.X[3*i+1] << " " << mySolarSystem.X[3*i+2] << endl;
         }
 
-        // cout << "Hello this is distance jaaaaa    " <<sqrt((mySolarSystem.X[3+0]-mySolarSystem.X[6+0])*(mySolarSystem.X[3+0]-mySolarSystem.X[6+0]) +
-        //          (mySolarSystem.X[3+1]-mySolarSystem.X[6+1])*(mySolarSystem.X[3+1]-mySolarSystem.X[6+1])) << endl;
         //perform RK4 for the timescale of observation
         //change to verlet for verlet
         //RK4::integrate(mySolarSystem.X, global_min, mySolarSystem, G, eps);
-
-
 
     }
     myfile.close();
