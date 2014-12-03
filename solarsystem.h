@@ -29,8 +29,8 @@ public:
 
     SolarSystem();
     void addCelestialBody(CelestialBody newBody);
-    std::valarray<double> calculateForcesAndEnergy(std::valarray<double> X, double G);
-    std::valarray<double> calculateVerlet(std::valarray<double> X,std::valarray<double> A, int bin);
+    std::valarray<double> calculateForcesAndEnergy(std::valarray<double> X, double G, double eps);
+    std::valarray<double> calculateVerlet(std::valarray<double> X,std::valarray<double> A, int bin, double G, double eps);
     void makeX();
     void makeXV();
     int numberOfBodies();

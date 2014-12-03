@@ -18,12 +18,12 @@ int main()
 {
 
     ofstream myfile;
-    myfile.open("N50cold5RK4.xyz");
+    myfile.open("5N500.xyz");
 
     double G_solarsystem = 4*M_PI*M_PI; //value of Gravitational constant.
     double earthvel = 2*M_PI;
 
-    int N = 200; //number of particles in simulation
+    int N = 500; //number of particles in simulation
     long seed = -1739562974; //seed number for gaussian random number generator
     double LYtoAU = 63239.73;
     double R = 20; //mean spherical radius to deviate from using random number generator. Units are lightyears
@@ -32,11 +32,15 @@ int main()
     double rho0 = 3*N*mu/(4*M_PI*R*R*R); //density of the cluster: total mass/volume
     double G = 3*M_PI/(32*rho0); //value of Gravitational constant in relative units. Derived from tau_crunch = 1.
     double tau_crunch = sqrt( (3*M_PI) / (32 * G * rho0) ); //singularity collapse time if continuous fluid. Units of time.
+
+    //eps is the smoothing factor used to reduce the numerical instability of small dr
+    //resulting from 2 particles very close together.
+    double eps = 0.15;
+
     cout << "rho" << rho0 << "G" << G << "taucrunch" << tau_crunch << endl;
 
-
     //runtime
-    double global_min = .0005; //step length
+    double global_min = .005; //step length
     double final_time = 5*tau_crunch; //years
 
     SolarSystem mySolarSystem;
@@ -74,12 +78,12 @@ int main()
     start = clock();
 
     //change makeX to makeXV for Verlet. makeX is for the original RK4 valarray with pos, vel combined.
-    mySolarSystem.makeX();
+    mySolarSystem.makeXV();
     double step = global_min;
     for(int i = 0; i < final_time/global_min; i++){
 
-        //verlet::INTEGRATE(mySolarSystem.X,mySolarSystem.V,mySolarSystem.A,step,mySolarSystem);
-        //step = mySolarSystem.min_time();
+        verlet::INTEGRATE(mySolarSystem.X,mySolarSystem.V,mySolarSystem.A,step,mySolarSystem, G, eps);
+        step = mySolarSystem.min_time();
 
         //write to file
         myfile << N << endl;
@@ -90,14 +94,14 @@ int main()
             //CHANGE X[6*i+0]RK4 to X[3*i+0]Verlet as necessary.
             // myfile << mySolarSystem.X[6*i+0] << " " << mySolarSystem.X[6*i+1] << " " << mySolarSystem.X[6*i+2] << " ";//RK4
             CelestialBody &thisBody = mySolarSystem.bodies[i];
-            myfile << thisBody.mass/70 << " " << mySolarSystem.X[6*i+0] << " " << mySolarSystem.X[6*i+1] << " " << mySolarSystem.X[6*i+2] << endl;
+            myfile << thisBody.mass/70 << " " << mySolarSystem.X[3*i+0] << " " << mySolarSystem.X[3*i+1] << " " << mySolarSystem.X[3*i+2] << endl;
         }
 
         // cout << "Hello this is distance jaaaaa    " <<sqrt((mySolarSystem.X[3+0]-mySolarSystem.X[6+0])*(mySolarSystem.X[3+0]-mySolarSystem.X[6+0]) +
         //          (mySolarSystem.X[3+1]-mySolarSystem.X[6+1])*(mySolarSystem.X[3+1]-mySolarSystem.X[6+1])) << endl;
         //perform RK4 for the timescale of observation
         //change to verlet for verlet
-        RK4::integrate(mySolarSystem.X, global_min, mySolarSystem, G);
+        //RK4::integrate(mySolarSystem.X, global_min, mySolarSystem, G, eps);
 
 
 

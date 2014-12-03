@@ -43,7 +43,7 @@ void SolarSystem::makeXV(){
     }
 }
 
-std::valarray<double> SolarSystem::calculateForcesAndEnergy(std::valarray<double> X, double G)
+std::valarray<double> SolarSystem::calculateForcesAndEnergy(std::valarray<double> X, double G, double eps)
 {
     forces = 0;
     kineticEnergy = 0;
@@ -55,14 +55,15 @@ std::valarray<double> SolarSystem::calculateForcesAndEnergy(std::valarray<double
         CelestialBody &body1 = bodies[i];
         for(int j=i+1; j<numberOfBodies(); j++) {
             CelestialBody &body2 = bodies[j];
-            vec3 deltaRVector =  body1.position - body2.position;
-            double dr = deltaRVector.length();
+
             double dx = X[6*i + 0] - X[6*j + 0];
             double dy = X[6*i + 1] - X[6*j + 1];
             double dz = X[6*i + 2] - X[6*j + 2];
 
+            double dr = sqrt((dx*dx + dy*dy + dz*dz));
+
             //f is the force acting between body 1 and body 2
-            double f = -(G * body1.mass * body2.mass)/(dr*dr*dr);
+            double f = -(G * body1.mass * body2.mass)/((dr*dr+ eps*eps)*dr);
 
             //a is the force multiplied by the relative position of the two bodies. the movement is added to previous position
             double axtemp = dx*(f);
@@ -101,13 +102,12 @@ std::valarray<double> SolarSystem::calculateForcesAndEnergy(std::valarray<double
     return k;
 }
 
-std::valarray<double> SolarSystem::calculateVerlet(std::valarray<double> X, std::valarray<double> A, int bin)
+std::valarray<double> SolarSystem::calculateVerlet(std::valarray<double> X, std::valarray<double> A, int bin, double G, double eps)
 {
     forces = 0;
     kineticEnergy = 0;
     potentialEnergy = 0;
     angularMomentum.setToZero();
-    double G = 4*M_PI*M_PI;
 
     for(int i=0; i<numberOfBodies(); i++) {
 //        std::cout << bodies[i].dtbin << "bin " << bin << std::endl;
@@ -115,14 +115,15 @@ std::valarray<double> SolarSystem::calculateVerlet(std::valarray<double> X, std:
             CelestialBody &body1 = bodies[i];
             for(int j=i+1; j<numberOfBodies(); j++) {
                 CelestialBody &body2 = bodies[j];
-                vec3 deltaRVector =  body1.position - body2.position;
-                double dr = deltaRVector.length();
+
                 double dx = X[3*i + 0] - X[3*j + 0];
                 double dy = X[3*i + 1] - X[3*j + 1];
                 double dz = X[3*i + 2] - X[3*j + 2];
 
+                double dr = sqrt((dx*dx + dy*dy + dz*dz));
+
                 //f is the force acting between body 1 and body 2
-                double f = -(G * body1.mass * body2.mass)/sqrt(dr*dr*dr);
+                double f = -(G * body1.mass * body2.mass)/((dr*dr+ eps*eps)*dr);
 
                 double axtemp = dx*(f);
                 double aytemp = dy*(f);

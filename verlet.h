@@ -8,7 +8,7 @@ class verlet
 {
 public:
     verlet();
-    static void INTEGRATE(std::valarray<double> &X, std::valarray<double> &V, std::valarray<double> &A, double dt, SolarSystem mysystem);
+    static void INTEGRATE(std::valarray<double> &X, std::valarray<double> &V, std::valarray<double> &A, double dt, SolarSystem mysystem, double G, double eps);
 };
 
 #endif // VERLET_H
