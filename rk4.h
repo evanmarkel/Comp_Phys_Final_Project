@@ -10,7 +10,7 @@ class RK4
 {
 public:
     RK4();
-    static void integrate(std::valarray<double> &X, double dt, SolarSystem mysystem);
+    static void integrate(std::valarray<double> &X, double dt, SolarSystem mysystem, double G);
 
 };
 

@@ -43,14 +43,13 @@ void SolarSystem::makeXV(){
     }
 }
 
-std::valarray<double> SolarSystem::calculateForcesAndEnergy(std::valarray<double> X)
+std::valarray<double> SolarSystem::calculateForcesAndEnergy(std::valarray<double> X, double G)
 {
     forces = 0;
     kineticEnergy = 0;
     potentialEnergy = 0;
     angularMomentum.setToZero();
     a.setToZero();
-    double G = 4*M_PI*M_PI;
 
     for(int i=0; i<numberOfBodies(); i++) {
         CelestialBody &body1 = bodies[i];
