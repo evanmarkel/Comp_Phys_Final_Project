@@ -113,6 +113,8 @@ std::valarray<double> SolarSystem::calculateVerlet(std::valarray<double> X, std:
             for(int j=i+1; j<numberOfBodies(); j++) {
                 CelestialBody &body2 = bodies[j];
 
+                // parallelize
+                //#pragma omp parallel for shared(dx,dy,dz) private(dr)
                 double dx = X[3*i + 0] - X[3*j + 0];
                 double dy = X[3*i + 1] - X[3*j + 1];
                 double dz = X[3*i + 2] - X[3*j + 2];
@@ -135,7 +137,6 @@ std::valarray<double> SolarSystem::calculateVerlet(std::valarray<double> X, std:
                 forces[3*j + 0] -= axtemp;
                 forces[3*j + 1] -= aytemp;
                 forces[3*j + 2] -= aztemp;
-
             }
         }
     }
@@ -177,23 +178,23 @@ std::valarray<double> SolarSystem::calculateEnergy(std::valarray<double> X, std:
         double dvy = V[3*i + 1];
         double dvz = V[3*i + 2];
 
-        double dv = sqrt((dvx*dvx + dvy*dvy + dvz*dvz));
+        double dv = sqrt(dvx*dvx + dvy*dvy + dvz*dvz);
 
         //angular momentum L = r x v
         double dx1 = X[3*i + 0];
         double dy1 = X[3*i + 1];
         double dz1 = X[3*i + 2];
 
-        double dr1 = sqrt((dx1*dx1 + dy1*dy1 + dz1*dz1));
+        double dr1 = sqrt(dx1*dx1 + dy1*dy1 + dz1*dz1);
         double dangularMomentum = dr1 * dv;
 
         //KE = (1/2) * Mass * Velocity^2
-        kineticEnergy = 0.5*body1.mass*dv*dv;
+        kineticEnergy = 0.5*body1.mass*dv*dv*.72;
 
         E[3*i + 0] = potentialEnergy;
         E[3*i + 1] = kineticEnergy;
 
-        //test if 2KE=U holds and satisfies virial theorem. Particle ejected if 2K - U > 0 and otherwise bound.
+        //test if 2KE=U holds and satisfies virial theorem. Particle can escape and is ejected if K - U > 0 and otherwise bound.
         if (potentialEnergy + kineticEnergy < 0) { isBound = 1;}
         else { isBound = 0;}
         E[3*i+2] = isBound;
@@ -209,11 +210,14 @@ int SolarSystem::numberOfBodies()
 double SolarSystem::CalculateTotalEnergy(std::valarray<double> E)
 {
     //calculates the total energy for the bound particles
-    double total = 0;
+    double totalkinetic = 0;
+    double totalpotential = 0;
     for(int i=0; i<numberOfBodies(); i++) {
-        total += -E[3*i]*E[3*i + 2] + 2*E[3*i + 1]*E[3*i + 2];
+        totalpotential += E[3*i]*E[3*i + 2]/2;
+        totalkinetic += E[3*i + 1]*E[3*i + 2];
     }
-    return total;
+    std::cout << "virial check " << 2*totalkinetic/totalpotential << std::endl;
+    return totalkinetic + totalpotential;
 }
 
 double SolarSystem::min_time(double global_min)

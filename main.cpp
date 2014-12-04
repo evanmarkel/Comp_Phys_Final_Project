@@ -19,9 +19,9 @@ int main()
     ofstream myfile;
     ofstream myfile2;
     ofstream myfile3;
-    myfile.open("0N1000XYZtau5eps0.xyz");
-    myfile2.open("0N1000tau5Energy.txt");
-    myfile3.open("0N1000tau5eps0ParticleEnergy.txt");
+    myfile.open("3000.xyz");
+    myfile2.open("3000TotalEn1000.txt");
+    myfile3.open("3000tau5eps05ParticleEnergy.txt");
 
     double G_solarsystem = 4*M_PI*M_PI; //value of Gravitational constant.
     double earthvel = 2*M_PI;
@@ -38,7 +38,7 @@ int main()
 
     //eps is the smoothing factor used to reduce the numerical instability of small dr
     //resulting from 2 particles very close together.
-    double eps = 0.0;
+    double eps = 0.05;
 
     cout << "rho " << rho0 << " G " << G << " taucrunch " << tau_crunch << endl;
 
@@ -72,7 +72,7 @@ int main()
 
         cout << x << " " << y << " " << z << " " << mass << endl;
 
-        mySolarSystem.addCelestialBody(CelestialBody(vec3(x,y,z), vec3(0,0,0), mass));//vec3(gaussian_deviate(&seed)/1000,gaussian_deviate(&seed)/1000,gaussian_deviate(&seed)/1000), mass));
+        mySolarSystem.addCelestialBody(CelestialBody(vec3(x,y,z), vec3(0,0,0), mass));
     }
 
     //begin runtime calculation
@@ -90,8 +90,7 @@ int main()
 
         verlet::INTEGRATE(mySolarSystem.X,mySolarSystem.V,mySolarSystem.A,mySolarSystem.E,step*4,mySolarSystem, G, eps);
         step = mySolarSystem.min_time(global_min);
-        int place = i;
-    myfile2 << " total E " << mySolarSystem.CalculateTotalEnergy(mySolarSystem.E) << " i " << i << " min step " << step << " KE " << endl;
+    myfile2 << " total E " << mySolarSystem.CalculateTotalEnergy(mySolarSystem.E) << " i " << i << " min step " << step << endl;
     myfile3 << "min_step " << i << endl;
     //write to file
         myfile << N << endl;
@@ -103,7 +102,7 @@ int main()
             // myfile << mySolarSystem.X[6*i+0] << " " << mySolarSystem.X[6*i+1] << " " << mySolarSystem.X[6*i+2] << " ";//RK4
             CelestialBody &thisBody = mySolarSystem.bodies[i];
             myfile << thisBody.mass/60 << " " << mySolarSystem.X[3*i+0] << " " << mySolarSystem.X[3*i+1] << " " << mySolarSystem.X[3*i+2] << endl;
-           myfile3 << "PE " << mySolarSystem.E[3*i] << " KE " << mySolarSystem.E[3*i+1] << " bound " << mySolarSystem.E[3*i+2] << " at step " << place << " total E " << mySolarSystem.CalculateTotalEnergy(mySolarSystem.E) << endl;
+           myfile3 << "PE " << mySolarSystem.E[3*i] << " KE " << mySolarSystem.E[3*i+1] << " bound " << mySolarSystem.E[3*i+2] << " at step " << i << " total E " << mySolarSystem.CalculateTotalEnergy(mySolarSystem.E) << endl;
         }
 
         //perform RK4 for the timescale of observation
