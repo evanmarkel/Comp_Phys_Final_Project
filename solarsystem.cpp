@@ -144,18 +144,18 @@ std::valarray<double> SolarSystem::calculateVerlet(std::valarray<double> X, std:
 
             }
             //calcuate v^2 for Kinetic Energy calculation.
-            double dvx = V[3*i + 0];
-            double dvy = V[3*i + 1];
-            double dvz = V[3*i + 2];
+       //     double dvx = V[3*i + 0];
+      //      double dvy = V[3*i + 1];
+     //       double dvz = V[3*i + 2];
 
-            double dv = sqrt((dvx*dvx + dvy*dvy + dvz*dvz));
+   //         double dv = sqrt((dvx*dvx + dvy*dvy + dvz*dvz));
 
            // kineticEnergy = 0.5*body1.mass*dv*dv;
 
             //test if 2K = U holds and satisfies virial theorem. Particle ejected if 2K - U > 0 and otherwise bound.
-            if (potentialEnergy + 2*kineticEnergy < 0) { isBound = 1;}
-            else { isBound = 0;}
-std::cout << "pe " << potentialEnergy << " ke " << kineticEnergy << " isbound " << isBound << std::endl;
+          //  if (potentialEnergy + 2*kineticEnergy < 0) { isBound = 1;}
+          //  else { isBound = 0;}
+//std::cout << "pe " << potentialEnergy << " ke " << kineticEnergy << " isbound " << isBound << std::endl;
         }
     }
 
@@ -247,7 +247,7 @@ double SolarSystem::min_time(double global_min)
         double Alength = sqrt(this->A[3*i+0]*this->A[3*i+0] + this->A[3*i+1]*this->A[3*i+1] + this->A[3*i+2]*this->A[3*i+2]);
         double tstep_metric = acc_constant*(1/Alength);
 
-        if (tstep_metric < .07){ bin = 2; dt_min = global_min;}
+        if (tstep_metric < .0012){ bin = 2; dt_min = global_min;}
         else if (tstep_metric <= .1){ bin = 1; dt_min = global_min*2;}
         else {bin = 0; dt_min = global_min*4;}
        // if(tstep_metric < dt_min && tstep_metric > global_min){dt_min = dt_min;}
