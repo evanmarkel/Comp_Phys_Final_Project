@@ -17,7 +17,6 @@ public:
     std::valarray<double> V;
     std::valarray<double> k;
     std::valarray<double> v;
-    std::valarray<double> timestep;
     std::valarray<double> forces;
     std::valarray<double> stepvalues;
     double kineticEnergy;
@@ -31,15 +30,13 @@ public:
 
     SolarSystem();
     void addCelestialBody(CelestialBody newBody);
-    std::valarray<double> calculateForcesAndEnergy(std::valarray<double> X, std::valarray<double> V, double G, double eps);
+    std::valarray<double> calculateRK4(std::valarray<double> X, std::valarray<double> V, double G, double eps);
     std::valarray<double> calculateVerlet(std::valarray<double> X,std::valarray<double> A, std::valarray<double> V, int bin, double G, double eps);
     std::valarray<double> calculateEnergy(std::valarray<double> X, std::valarray<double> V, double G);
     void makeX();
     void makeXV();
     int numberOfBodies();
     double CalculateTotalEnergy(std::valarray<double> E);
-    double CalculatePotentialEnergy();
-    double CalculateBoundPotentialEnergy();
     double min_time(double global_min);
     std::valarray<double> bin_particles(int boolean_bin);
 };

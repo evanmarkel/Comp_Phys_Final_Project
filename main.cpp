@@ -17,7 +17,11 @@ using namespace std;
 int main()
 {
     ofstream myfile;
-    myfile.open("N1000TotalEnergy.txt");
+    ofstream myfile2;
+    ofstream myfile3;
+    myfile.open("0N1000XYZtau5eps0.xyz");
+    myfile2.open("0N1000tau5Energy.txt");
+    myfile3.open("0N1000tau5eps0ParticleEnergy.txt");
 
     double G_solarsystem = 4*M_PI*M_PI; //value of Gravitational constant.
     double earthvel = 2*M_PI;
@@ -34,9 +38,9 @@ int main()
 
     //eps is the smoothing factor used to reduce the numerical instability of small dr
     //resulting from 2 particles very close together.
-    double eps = 0.15;
+    double eps = 0.0;
 
-    cout << "rho" << rho0 << "G" << G << "taucrunch" << tau_crunch << endl;
+    cout << "rho " << rho0 << " G " << G << " taucrunch " << tau_crunch << endl;
 
     //runtime
     double global_min = .005; //step length
@@ -86,26 +90,30 @@ int main()
 
         verlet::INTEGRATE(mySolarSystem.X,mySolarSystem.V,mySolarSystem.A,mySolarSystem.E,step*4,mySolarSystem, G, eps);
         step = mySolarSystem.min_time(global_min);
-myfile << " total E " << mySolarSystem.CalculateTotalEnergy(mySolarSystem.E) << " i " << i << " step " << step << endl;
-        //write to file
-       //** myfile << N << endl;
-       //** myfile << "stellar cluster in lightyears" << endl;
+        int place = i;
+    myfile2 << " total E " << mySolarSystem.CalculateTotalEnergy(mySolarSystem.E) << " i " << i << " min step " << step << " KE " << endl;
+    myfile3 << "min_step " << i << endl;
+    //write to file
+        myfile << N << endl;
+        myfile << "stellar cluster in lightyears" << endl;
         for (int i=0;i<mySolarSystem.bodies.size();i++) {
             // myfile << mySolarSystem.X[3*i+0] << " " << mySolarSystem.X[3*i+1] << " " << mySolarSystem.X[3*i+2] << " ";
             //" length" << sqrt(mySolarSystem.A[3*i+0]*mySolarSystem.A[3*i+0] + mySolarSystem.A[3*i+1]*mySolarSystem.A[3*i+1] + mySolarSystem.A[3*i+2]*mySolarSystem.A[3*i+2]) << " ";//Verlet
             //CHANGE X[6*i+0]RK4 to X[3*i+0]Verlet as necessary.
             // myfile << mySolarSystem.X[6*i+0] << " " << mySolarSystem.X[6*i+1] << " " << mySolarSystem.X[6*i+2] << " ";//RK4
             CelestialBody &thisBody = mySolarSystem.bodies[i];
-            //myfile << thisBody.mass/60 << " " << mySolarSystem.X[3*i+0] << " " << mySolarSystem.X[3*i+1] << " " << mySolarSystem.X[3*i+2] << endl;
-       //**    myfile << "PE " << mySolarSystem.E[3*i] << " KE " << mySolarSystem.E[3*i+1] << " bound " << mySolarSystem.E[3*i+2] << endl;
+            myfile << thisBody.mass/60 << " " << mySolarSystem.X[3*i+0] << " " << mySolarSystem.X[3*i+1] << " " << mySolarSystem.X[3*i+2] << endl;
+           myfile3 << "PE " << mySolarSystem.E[3*i] << " KE " << mySolarSystem.E[3*i+1] << " bound " << mySolarSystem.E[3*i+2] << " at step " << place << " total E " << mySolarSystem.CalculateTotalEnergy(mySolarSystem.E) << endl;
         }
 
         //perform RK4 for the timescale of observation
         //change to verlet for verlet
-        //RK4::integrate(mySolarSystem.X, global_min, mySolarSystem, G, eps);
+        //RK4::integrate(mySolarSystem.X, mySolarSystem.V, global_min, mySolarSystem, G, eps);
 
     }
     myfile.close();
+    myfile2.close();
+    myfile3.close();
 
     //end run time
     end = clock();

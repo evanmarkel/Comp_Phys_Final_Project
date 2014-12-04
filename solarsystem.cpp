@@ -15,7 +15,7 @@ void SolarSystem::makeX(){
     forces.resize(3*this->numberOfBodies());
     k.resize(6*this->numberOfBodies());
     v.resize(6*this->numberOfBodies());
-    timestep.resize(3*this->numberOfBodies());
+    E.resize(3*this->numberOfBodies());
     for(int i = 0; i<this->numberOfBodies(); i++){
         this->X[6*i + 0] = this->bodies[i].position[0];
         this->X[6*i + 1] = this->bodies[i].position[1];
@@ -32,7 +32,6 @@ void SolarSystem::makeXV(){
     A.resize(3*this->numberOfBodies());
     V.resize(3*this->numberOfBodies());
     E.resize(3*this->numberOfBodies());
-    timestep.resize(3*this->numberOfBodies());
     forces.resize(3*this->numberOfBodies());
     for(int i = 0; i<this->numberOfBodies(); i++){
         this->X[3*i + 0] = this->bodies[i].position[0];
@@ -44,7 +43,7 @@ void SolarSystem::makeXV(){
     }
 }
 
-std::valarray<double> SolarSystem::calculateForcesAndEnergy(std::valarray<double> X, std::valarray<double> V, double G, double eps)
+std::valarray<double> SolarSystem::calculateRK4(std::valarray<double> X, std::valarray<double> V, double G, double eps)
 {
     forces = 0;
     kineticEnergy = 0;
@@ -81,14 +80,11 @@ std::valarray<double> SolarSystem::calculateForcesAndEnergy(std::valarray<double
             forces[3*j + 1] -= aytemp;
             forces[3*j + 2] -= aztemp;
 
-            potentialEnergy -= (body1.mass*body2.mass)/dr;
+            //potentialEnergy -= (body1.mass*body2.mass)/dr;
         }
 
-        kineticEnergy += 0.5*body1.mass*body1.velocity.lengthSquared();
+        //kineticEnergy += 0.5*body1.mass*body1.velocity.lengthSquared();
 
-        //angular momentum L = r x v
-        double dangularMomentum = body1.position.length() * body1.velocity.length();
-        //  std::cout << potentialEnergy << " and KE " << kineticEnergy << "and L" << dangularMomentum<< std::endl;
     }
     //calculate Vx Vy Vz.assign to X. also assign forces.
     for (int i =0; i <numberOfBodies(); i++){
@@ -140,22 +136,7 @@ std::valarray<double> SolarSystem::calculateVerlet(std::valarray<double> X, std:
                 forces[3*j + 1] -= aytemp;
                 forces[3*j + 2] -= aztemp;
 
-               // potentialEnergy += -G * (body1.mass*body2.mass) / dr;
-
             }
-            //calcuate v^2 for Kinetic Energy calculation.
-       //     double dvx = V[3*i + 0];
-      //      double dvy = V[3*i + 1];
-     //       double dvz = V[3*i + 2];
-
-   //         double dv = sqrt((dvx*dvx + dvy*dvy + dvz*dvz));
-
-           // kineticEnergy = 0.5*body1.mass*dv*dv;
-
-            //test if 2K = U holds and satisfies virial theorem. Particle ejected if 2K - U > 0 and otherwise bound.
-          //  if (potentialEnergy + 2*kineticEnergy < 0) { isBound = 1;}
-          //  else { isBound = 0;}
-//std::cout << "pe " << potentialEnergy << " ke " << kineticEnergy << " isbound " << isBound << std::endl;
         }
     }
 
@@ -189,7 +170,7 @@ std::valarray<double> SolarSystem::calculateEnergy(std::valarray<double> X, std:
 
             double dr = sqrt((dx*dx + dy*dy + dz*dz));
 
-            potentialEnergy += -G * (body1.mass*body2.mass) / dr;
+            potentialEnergy -= G * (body1.mass*body2.mass) / (dr);
         }
         //calcuate v^2 for Kinetic Energy calculation.
         double dvx = V[3*i + 0];
@@ -197,6 +178,16 @@ std::valarray<double> SolarSystem::calculateEnergy(std::valarray<double> X, std:
         double dvz = V[3*i + 2];
 
         double dv = sqrt((dvx*dvx + dvy*dvy + dvz*dvz));
+
+        //angular momentum L = r x v
+        double dx1 = X[3*i + 0];
+        double dy1 = X[3*i + 1];
+        double dz1 = X[3*i + 2];
+
+        double dr1 = sqrt((dx1*dx1 + dy1*dy1 + dz1*dz1));
+        double dangularMomentum = dr1 * dv;
+
+        //KE = (1/2) * Mass * Velocity^2
         kineticEnergy = 0.5*body1.mass*dv*dv;
 
         E[3*i + 0] = potentialEnergy;
@@ -206,10 +197,8 @@ std::valarray<double> SolarSystem::calculateEnergy(std::valarray<double> X, std:
         if (potentialEnergy + kineticEnergy < 0) { isBound = 1;}
         else { isBound = 0;}
         E[3*i+2] = isBound;
-
     }
-
-return E;
+    return E;
 }
 
 int SolarSystem::numberOfBodies()
@@ -221,20 +210,10 @@ double SolarSystem::CalculateTotalEnergy(std::valarray<double> E)
 {
     //calculates the total energy for the bound particles
     double total = 0;
-     for(int i=0; i<numberOfBodies(); i++) {
-         total += E[3*i]*E[3*i + 2] + E[3*i + 1]*E[3*i + 2];
-     }
+    for(int i=0; i<numberOfBodies(); i++) {
+        total += -E[3*i]*E[3*i + 2] + 2*E[3*i + 1]*E[3*i + 2];
+    }
     return total;
-}
-
-double SolarSystem::CalculatePotentialEnergy()
-{
-    return this->potentialEnergy;
-}
-
-double SolarSystem::CalculateBoundPotentialEnergy()
-{
-    return this->potentialEnergy;
 }
 
 double SolarSystem::min_time(double global_min)
@@ -250,14 +229,14 @@ double SolarSystem::min_time(double global_min)
         if (tstep_metric < .0012){ bin = 2; dt_min = global_min;}
         else if (tstep_metric <= .1){ bin = 1; dt_min = global_min*2;}
         else {bin = 0; dt_min = global_min*4;}
-       // if(tstep_metric < dt_min && tstep_metric > global_min){dt_min = dt_min;}
+        // if(tstep_metric < dt_min && tstep_metric > global_min){dt_min = dt_min;}
         std::cout << "tstep_metric for body i = " << i << " is " << tstep_metric << " bin = " << bin << std::endl;
         bodies[i].dtbin = bin;
         if(dt_min < temp_step){ temp_step = dt_min;}
     }
     for(int i = 0; i < numberOfBodies(); i++) {
         CelestialBody &thisBody = bodies[i];
-    //std::cout << "bodies.dtbin i= " << i <<  "is " << thisBody.dtbin << std::endl;
+        //std::cout << "bodies.dtbin i= " << i <<  "is " << thisBody.dtbin << std::endl;
     }
     std::cout << "dt_min is " << temp_step << std::endl;
     return temp_step;
@@ -277,7 +256,6 @@ std::valarray<double> SolarSystem::bin_particles(int boolean_bin)
             stepvalues[3*i + 1]=0;
             stepvalues[3*i + 2]=0;
         }
-//std::cout << stepvalues[3*i] << " " << stepvalues[3*i+1]<< " " << bodies[i].dtbin <<std::endl;
     }
     return stepvalues;
 }
