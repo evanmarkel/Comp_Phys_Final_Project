@@ -140,7 +140,7 @@ std::valarray<double> SolarSystem::calculateVerlet(std::valarray<double> X, std:
                 forces[3*j + 1] -= aytemp;
                 forces[3*j + 2] -= aztemp;
 
-                potentialEnergy += -G * (body1.mass*body2.mass) / dr;
+               // potentialEnergy += -G * (body1.mass*body2.mass) / dr;
 
             }
             //calcuate v^2 for Kinetic Energy calculation.
@@ -150,15 +150,12 @@ std::valarray<double> SolarSystem::calculateVerlet(std::valarray<double> X, std:
 
             double dv = sqrt((dvx*dvx + dvy*dvy + dvz*dvz));
 
-            kineticEnergy = 0.5*body1.mass*dv*dv;
+           // kineticEnergy = 0.5*body1.mass*dv*dv;
 
             //test if 2K = U holds and satisfies virial theorem. Particle ejected if 2K - U > 0 and otherwise bound.
             if (potentialEnergy + 2*kineticEnergy < 0) { isBound = 1;}
             else { isBound = 0;}
 std::cout << "pe " << potentialEnergy << " ke " << kineticEnergy << " isbound " << isBound << std::endl;
-            //angular momentum L = r x v
-            //double dangularMomentum = body1.position.length() * body1.velocity.length();
-            //std::cout << potentialEnergy << " and KE " << kineticEnergy << "and L" << dangularMomentum<< std::endl;
         }
     }
 
@@ -175,7 +172,6 @@ std::cout << "pe " << potentialEnergy << " ke " << kineticEnergy << " isbound " 
 
 std::valarray<double> SolarSystem::calculateEnergy(std::valarray<double> X, std::valarray<double> V, double G)
 {
-
     isBound = 2;
     angularMomentum.setToZero();
 
@@ -207,13 +203,9 @@ std::valarray<double> SolarSystem::calculateEnergy(std::valarray<double> X, std:
         E[3*i + 1] = kineticEnergy;
 
         //test if 2KE=U holds and satisfies virial theorem. Particle ejected if 2K - U > 0 and otherwise bound.
-        if (potentialEnergy + 2*kineticEnergy < 0) { isBound = 1;}
+        if (potentialEnergy + kineticEnergy < 0) { isBound = 1;}
         else { isBound = 0;}
         E[3*i+2] = isBound;
-        std::cout << "pe " << potentialEnergy << "ke " << kineticEnergy << "isbound " << isBound << std::endl;
-        //angular momentum L = r x v
-        //double dangularMomentum = body1.position.length() * body1.velocity.length();
-        //std::cout << potentialEnergy << " and KE " << kineticEnergy << "and L" << dangularMomentum<< std::endl;
 
     }
 
@@ -225,9 +217,14 @@ int SolarSystem::numberOfBodies()
     return bodies.size();
 }
 
-double SolarSystem::CalculateKineticEnergy()
+double SolarSystem::CalculateTotalEnergy(std::valarray<double> E)
 {
-    return this->kineticEnergy;
+    //calculates the total energy for the bound particles
+    double total = 0;
+     for(int i=0; i<numberOfBodies(); i++) {
+         total += E[3*i]*E[3*i + 2] + E[3*i + 1]*E[3*i + 2];
+     }
+    return total;
 }
 
 double SolarSystem::CalculatePotentialEnergy()

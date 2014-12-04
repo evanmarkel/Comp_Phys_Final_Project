@@ -17,7 +17,7 @@ using namespace std;
 int main()
 {
     ofstream myfile;
-    myfile.open("5N500Energy.xyz");
+    myfile.open("N500Energy.xyz");
 
     double G_solarsystem = 4*M_PI*M_PI; //value of Gravitational constant.
     double earthvel = 2*M_PI;
@@ -86,7 +86,7 @@ int main()
 
         verlet::INTEGRATE(mySolarSystem.X,mySolarSystem.V,mySolarSystem.A,mySolarSystem.E,step*4,mySolarSystem, G, eps);
         step = mySolarSystem.min_time(global_min);
-
+cout << " total E " << mySolarSystem.CalculateTotalEnergy(mySolarSystem.E) << endl;
         //write to file
         myfile << N << endl;
         myfile << "stellar cluster in lightyears" << endl;
@@ -96,7 +96,8 @@ int main()
             //CHANGE X[6*i+0]RK4 to X[3*i+0]Verlet as necessary.
             // myfile << mySolarSystem.X[6*i+0] << " " << mySolarSystem.X[6*i+1] << " " << mySolarSystem.X[6*i+2] << " ";//RK4
             CelestialBody &thisBody = mySolarSystem.bodies[i];
-            myfile << thisBody.mass/60 << " " << mySolarSystem.X[3*i+0] << " " << mySolarSystem.X[3*i+1] << " " << mySolarSystem.X[3*i+2] << endl;
+            //myfile << thisBody.mass/60 << " " << mySolarSystem.X[3*i+0] << " " << mySolarSystem.X[3*i+1] << " " << mySolarSystem.X[3*i+2] << endl;
+           myfile << "PE " << mySolarSystem.E[3*i] << " KE " << mySolarSystem.E[3*i+1] << " bound " << mySolarSystem.E[3*i+2] << endl;
         }
 
         //perform RK4 for the timescale of observation

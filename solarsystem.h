@@ -37,7 +37,7 @@ public:
     void makeX();
     void makeXV();
     int numberOfBodies();
-    double CalculateKineticEnergy();
+    double CalculateTotalEnergy(std::valarray<double> E);
     double CalculatePotentialEnergy();
     double CalculateBoundPotentialEnergy();
     double min_time(double global_min);
