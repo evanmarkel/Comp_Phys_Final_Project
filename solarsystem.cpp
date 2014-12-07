@@ -216,7 +216,7 @@ double SolarSystem::CalculateTotalEnergy(std::valarray<double> E)
         totalpotential += E[3*i]*E[3*i + 2]/2;
         totalkinetic += E[3*i + 1]*E[3*i + 2];
     }
-    std::cout << "virial check " << 2*totalkinetic/totalpotential << std::endl;
+   // std::cout << "virial check " << 2*totalkinetic/totalpotential << std::endl;
     return totalkinetic + totalpotential;
 }
 
