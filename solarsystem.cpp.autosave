@@ -1,6 +1,6 @@
 #include "solarsystem.h"
 #include <math.h>
-#include <omp.h>
+//#include <omp.h>
 
 SolarSystem::SolarSystem()
 {
@@ -115,7 +115,7 @@ std::valarray<double> SolarSystem::calculateVerlet(std::valarray<double> X, std:
                 CelestialBody &body2 = bodies[j];
 
                 // parallelize
-               #pragma omp parallel for private(i, j, dr) num_threads(4) reduction(+:axtemp,aytemp,aztemp)
+              // #pragma omp parallel for private(i, j, dr) num_threads(4) reduction(+:axtemp,aytemp,aztemp)
 
                 double dx = X[3*i + 0] - X[3*j + 0];
                 double dy = X[3*i + 1] - X[3*j + 1];

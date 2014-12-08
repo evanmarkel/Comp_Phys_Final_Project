@@ -20,5 +20,9 @@ HEADERS += \
     gaussiandeviate.h
 
 unix: LIBS += -L/usr/local/lib -larmadillo
+
 INCLUDEPATH += /usr/include
 DEPENDPATH += /usr/include
+
+
+

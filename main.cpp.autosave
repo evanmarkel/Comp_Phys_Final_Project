@@ -9,7 +9,7 @@
 #include <rk4.h>
 #include <verlet.h>
 #include <gaussiandeviate.h>
-/#include <omp.h>
+//#include <omp.h>
 
 #include <valarray>
 using namespace std;
@@ -26,7 +26,7 @@ int main()
     double G_solarsystem = 4*M_PI*M_PI; //value of Gravitational constant.
     double earthvel = 2*M_PI;
 
-    int N = 100; //number of particles in simulation
+    int N = 500; //number of particles in simulation
     long seed = -1739562974; //seed number for gaussian random number generator
     double LYtoAU = 63239.73;
     double R = 20; //mean spherical radius to deviate from using random number generator. Units are lightyears
